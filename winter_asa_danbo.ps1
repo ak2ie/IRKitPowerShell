@@ -10,6 +10,10 @@
 # ========== 定数 ==========
 # ログ保存パス
 $LOG_FILE = [System.Environment]::GetFolderPath("MyDocuments") + "\remocon.log"
+# Googleカレンダー保存パス
+$HOLIDAY_FILE_SAVE_PATH= [System.Environment]::GetFolderPath("MyDocuments") + "\holiday_list.ical"
+# GoolgeカレンダーURL
+$GOOLGE_CALENDAR_URI="https://calendar.google.com/calendar/ical/ja.japanese%23holiday%40group.v.calendar.google.com/public/basic.ics"
 # ========== リモコン信号 ==========
 # サーキュレーター電源
 $CIRCULATOR_POWER = '{"format":"raw","freq":38,"data":[17421,8755,1190,1002,1190,1002,1190,1002,1190,1002,1190,1002,1190,1002,1190,1002,1190,3228,1190,1002,1190,3228,1190,3228,1190,3228,1190,3228,1190,1002,1190,3228,1190,3228,1190,968,1190,968,1190,968,1190,968,1190,968,1190,968,1190,968,1190,968,1190,3228,1190,3228,1190,3228,1190,3228,1190,3228,1190,3228,1190,3228,1190,3228,1190,65535,0,14668,17421,4251,1190]}'
@@ -63,7 +67,29 @@ log "引数:" $args[0]
 if ($args[0] -eq "ON") {
     $SIGNALS = $ON_SIGNALS
 } elseif ($args[0] -eq "OFF") {
-    $SIGNALS = $OFF_SIGNALS
+    # 今日の日付に関する値を取得
+    $today_yyyymmdd=(Get-Date).ToString("yyyymmdd")
+    $today_yobi=(Get-Date).ToString("ddd")
+    $year=(Get-Date).ToString("yyyy")
+
+    try {
+        # Googleカレンダーの祝日カレンダーを取得
+        Invoke-WebRequest -Uri $GOOLGE_CALENDAR_URI -OutFile $SAVE_PATH -ErrorAction Stop
+    } catch {
+        log "祝日カレンダーの取得に失敗しました"
+    }
+    
+    # 祝日は下記のように書かれているたため、日付のみを抽出する
+    # DTSTART;VALUE=DATE:<祝日日付：YYYYMMDD形式>
+    $holidays = Select-String -Pattern "DTSTART;VALUE=DATE:($year.*)" -Path $SAVE_PATH | % { $g = $_.Matches.Groups; $g.Groups[1].Value }
+
+    # 土、日、祝日であればOFFにしない
+    if( $today_yobi -eq "日" -or $today_yobi -eq "土" -or $holidays -ccontains $today_yyyymmdd) {
+        $SIGNALS = @();
+        log "休日のため実行しません"
+    } else {
+        $SIGNALS = $OFF_SIGNALS
+    }
 } elseif ($args[0] -eq "LIGHT") {
     $SIGNALS = $LIGHT_SIGNALS
 } else {
