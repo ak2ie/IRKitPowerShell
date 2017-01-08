@@ -186,7 +186,7 @@ if ($args[0] -eq "ON") {
     $SIGNALS = $ON_SIGNALS
 } elseif ($args[0] -eq "OFF") {
     # 今日の日付に関する値を取得
-    $today_yyyymmdd=(Get-Date).ToString("yyyymmdd")
+    $today_yyyymmdd=(Get-Date).ToString("yyyyMMdd")
     $today_yobi=(Get-Date).ToString("ddd")
     $year=(Get-Date).ToString("yyyy")
 
