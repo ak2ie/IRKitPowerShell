@@ -192,14 +192,8 @@ log "========== 処理スタート =========="
 log "引数:" $args[0]
 
 if ($args[0] -eq "ON") {
-    # エアコンは本体リセットをしてからでないと、吹き出し口が開かない...
-    .\winter_asa_danbo.ps1 "AIR_CON_RESET"
     # 機器をON
     $SIGNALS = $ON_SIGNALS
-} elseif ($args[0] -eq "AIR_CON_RESET") {
-    # エアコンリセット
-    $SIGNALS = [ordered]@{"エアコン リセット"=$AIR_CONDITIONE_RESET;}
-    $SIGNAL_SEND_INTERVAL = 60
 } elseif ($args[0] -eq "OFF") {
     # 今日の日付に関する値を取得
     $today_yyyymmdd=(Get-Date).ToString("yyyyMMdd")
